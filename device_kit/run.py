@@ -60,12 +60,17 @@ def main():
   # print(d.costv(x, 0))
   # print(d.deriv(x, 0))
 
+  df.drop('excess', axis=0, inplace=True)
+
   if not exists('run-out/'):
     mkdir('run-out')
   output_filename = 'run-out/' + splitext(basename(args.filename))[0]
 
   title = meta.get('title') if meta else None
   fig, ax = plot_dataframe_as_stacked_bars(df, aggregation_level=3)
+
+  ax.plot(range(0, df.shape[1]), df.sum(), label='excess', color='red')
+  df.loc['excess'] = df.sum()
 
   for (label, d) in df_derivs.iterrows():
     if label.find('supply') >= 0:
@@ -82,6 +87,15 @@ def main():
     frameon=True,
     fancybox=True,
     borderaxespad=-3
+  )
+
+  ax.grid(
+      True,
+      which='both',      # 'major', 'minor', or 'both'
+      linestyle='--',
+      linewidth=0.5,
+      color='gray',
+      alpha=0.7
   )
   fig.savefig(output_filename + '.png', format='png')
   df.to_csv(output_filename + '.csv', float_format='%.3f')

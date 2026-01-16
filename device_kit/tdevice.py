@@ -50,10 +50,11 @@ class TDevice(Device):
       raise ValueError('sustainment (heat transfer coefficient) must be in [0,1]')
     if efficiency == 0:
       raise ValueError('efficiency factor must not be 0')
-    if t_range < 0:
-      raise ValueError('acceptable temperature range (t_range) must be >= 0')
     if len(t_external) != len(self):
       raise ValueError('external temperature vector has wrong len (%s)' % (t_external,))
+    t_range = np.ones(self.shape)*t_range
+    if (t_range < 0.0).any():
+      raise ValueError('acceptable temperature range (t_range) must be >= 0')
     self._sustainment = sustainment
     self._efficiency = efficiency
     self._t_init = t_init
@@ -81,7 +82,7 @@ class TDevice(Device):
   def deriv(self, s, p):
     ''' @override deriv() to do r to t conversion. Chain rule to account for r2t(). '''
     dt = self.deriv_t(self.r2t(s))
-    return (self.sustainment_matrix*dt.reshape(24,1)).sum(axis=0)*self.efficiency + p
+    return (self.sustainment_matrix*dt.reshape(len(self),1)).sum(axis=0)*self.efficiency + p
 
   def hess(self, s, p=0):
     ''' Return hessian diagonal approximation. nd.Hessian takes long time. In testing so far

@@ -22,7 +22,7 @@ classifiers = [
 keywords = ["microgrid", "day-ahead", "simulation", "modeling"]
 dependencies = [
   "numpy>=1.26",
-  "scipy>=1.12",
+  "scipy==1.15",
   "numdifftools==0.9.41",
 ]
 [project.optional-dependencies]
@@ -38,4 +38,3 @@ Issues = "https://github.com/sgpinkus/device_kit/issues"
 
 [tool.setuptools]
 packages = ["device_kit", "device_kit.sample_scenarios", "device_kit.projection", "device_kit.loaders"]
-

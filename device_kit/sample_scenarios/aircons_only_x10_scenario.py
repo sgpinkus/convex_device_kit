@@ -38,7 +38,7 @@ def params():
     'care_time': np.ones(dimension),
     't_range': randrange(1, 4),
     'sustainment': 0.95,
-    'efficiency': -5-3*random()
+    'efficiency': 0.5+random()
   }
 
 
