@@ -109,6 +109,7 @@ def load_thermal_load_device(d, basis: int):
   device_id = d['title'] if 'title' in d else d['type']
   bounds = run_to_array(d['bounds'])
   params = { parameter_map[k]: v for k, v in d['parameters'].items() }
+  params['t_external'] = run_to_array(d['parameters']['externalTemperatureProfile'])
   params['t_range'] = run_to_array(d['parameters']['temperatureVariationCareFactor'])
   return device_kit.TDevice(device_id, basis, bounds, **params)
 
