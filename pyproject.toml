@@ -25,11 +25,15 @@ dependencies = [
   "scipy<=1.15",
   "numdifftools==0.9.41",
 ]
+
 [project.optional-dependencies]
 gui = ["PyQt5"]
 run = [
   "matplotlib>=3.5",
   "pandas>=2.2"
+]
+dev = [
+  "pylint"
 ]
 
 [project.urls]
