@@ -1,14 +1,14 @@
+from tests.test_device import test_device, test_cdevice, test_idevice
+from device_kit import *
+from unittest import TestCase
+import unittest
+from collections import OrderedDict
+from copy import deepcopy
+import pandas as pd
+import numpy as np
 import sys
 import os
 sys.path.append(os.path.dirname(os.path.realpath(__file__ + '/../')))
-import numpy as np
-import pandas as pd
-from copy import deepcopy
-from collections import OrderedDict
-import unittest
-from unittest import TestCase
-from device_kit import *
-from tests.test_device import test_device, test_cdevice, test_idevice
 
 
 np.set_printoptions(
@@ -36,7 +36,7 @@ class TestDeviceSet(TestCase):
     self.assertEqual(len(d.id), 4)
     self.assertEqual(d.devices, self.devices)
     self.assertEqual(d.shape, (4, 24))
-    self.assertTrue((d.partition[:,1] == 1).all())
+    self.assertTrue((d.partition[:, 1] == 1).all())
     self.assertEqual(d.bounds.shape, (4*24, 2))
     self.assertEqual(d.sbounds, None)
     self.assertEqual(len(d.constraints), 6)
@@ -54,7 +54,7 @@ class TestDeviceSet(TestCase):
     d.hess(x, p)
 
   def test_initializer(self):
-    d = DeviceSet('test', self.devices, sbounds=(0,100))
+    d = DeviceSet('test', self.devices, sbounds=(0, 100))
     self.assertEqual(len(d.constraints), 6+48)
 
   def test_set_of_sets(self):
@@ -62,18 +62,18 @@ class TestDeviceSet(TestCase):
     d2 = DeviceSet('d2', self.devices)
     d = DeviceSet('test', [d1, d2])
     self.assertEqual(d.shape, (8, 24))
-    self.assertTrue((d.partition[:,1] == 4).all())
+    self.assertTrue((d.partition[:, 1] == 4).all())
     self.assertEqual(d.bounds.shape, (8*24, 2))
 
   def test_leaf_devices(self):
-    d = DeviceSet('test', self.devices, sbounds=(0,100))
+    d = DeviceSet('test', self.devices, sbounds=(0, 100))
     self.assertEqual(len(list(d.leaf_devices())), 4)
 
   def test_map(self):
     d1 = DeviceSet('d1', self.devices)
     d2 = DeviceSet('d2', self.devices)
     device = DeviceSet('test', [d1, d2])
-    _map = list(device.map(np.ones((8,24))))
+    _map = list(device.map(np.ones((8, 24))))
     self.assertEqual(len(_map), 8)
     self.assertEqual(_map[0][0], 'test.d1.test')
     self.assertEqual(_map[4][0], 'test.d2.test')
@@ -85,21 +85,22 @@ class TestDeviceSet(TestCase):
     12=24*0.5. However minimize report no error and returns an infeasible soln, with the sub balancing
     constraint being ignored. But this should occur in DeviceSet too.
     '''
-    deviceset = DeviceSet('x', [Device('a', 24, (0,1)), Device('b', 24, (0,1), (12,24))], (0, 0.4))
+    deviceset = DeviceSet('x', [Device('a', 24, (0, 1)), Device('b', 24, (0, 1), (12, 24))], (0, 0.4))
     soln = solve(deviceset, 0)
-    self.assertTrue((np.abs(soln[0][1] - 0.5) <= 1e-6).all()) # Pass
-    self.assertNotEqual(soln[1].status, 0) # Fail
+    self.assertTrue((np.abs(soln[0][1] - 0.5) <= 1e-6).all())  # Pass
+    self.assertNotEqual(soln[1].status, 0)  # Fail
+
 
 class TestMFDeviceSet(TestCase):
 
   def _test_devices(self, s=23):
     np.random.seed(s)
-    uncntrld = 0 # np.maximum(0, np.random.random(24)-0.4)
+    uncntrld = 0  # np.maximum(0, np.random.random(24)-0.4)
     cost = np.stack((np.sin(np.linspace(0, np.pi, 24))*0.5+0.1, np.ones(24)*0.001, np.zeros(24)), axis=1)
     devices = OrderedDict([
         # ('uncntrld', Device('uncntrld', 24, (uncntrld, uncntrld))),
         ('scalable', IDevice2('scalable', 24, (0., 2), (12, 18))),
-        ('shiftable', CDevice2('shiftable', 24, (0, 2), (12, 24))), # IDevice2('shiftable', 24, (0, 2), (12, 24) Same same.
+        ('shiftable', CDevice2('shiftable', 24, (0, 2), (12, 24))),  # IDevice2('shiftable', 24, (0, 2), (12, 24) Same same.
         ('generator', GDevice('generator', 24, (-50, 0), None, **{'cost_coeffs': cost})),
     ])
     return devices
@@ -123,16 +124,16 @@ class TestMFDeviceSet(TestCase):
     is satisfied.
     '''
     devices = self._test_devices()
-    da = DeviceSet('a', list(devices.values()), (0.,0.))
+    da = DeviceSet('a', list(devices.values()), (0., 0.))
     db = SubBalancedDeviceSet(
       'b',
       [
         # MFDeviceSet(devices['uncntrld'], ['e', 'heat']),
         MFDeviceSet(devices['scalable'], ['e', 'heat']),
         MFDeviceSet(devices['shiftable'], ['e', 'heat']),
-        TwoRatioMFDeviceSet(devices['generator'], ['e', 'heat'], [1,8]),
+        TwoRatioMFDeviceSet(devices['generator'], ['e', 'heat'], [1, 8]),
       ],
-      sbounds=(0.,0.),
+      sbounds=(0., 0.),
       labels=['heat'],
     )
     (xa, statusa) = solve(da, 0, solver_options={'ftol': 1e-6})
@@ -141,7 +142,7 @@ class TestMFDeviceSet(TestCase):
     df_xa = pd.DataFrame.from_dict(dict(da.map(xa)), orient='index').transpose()
     df_xa.columns = [i.strip('a.') for i in df_xa.columns]
     df_xb = pd.DataFrame.from_dict(dict(db.map(xb)), orient='index').transpose()
-    for k in ['scalable', 'shiftable', 'generator']: # ['uncntrld', 'scalable', 'shiftable', 'generator']:
+    for k in ['scalable', 'shiftable', 'generator']:  # ['uncntrld', 'scalable', 'shiftable', 'generator']:
       df_xb[k] = df_xb.filter(regex='%s' % (k,), axis=1).sum(axis=1)
       del df_xb['b.' + k + '.heat'], df_xb['b.' + k + '.e']
     df_xa.sort_index(axis=1, inplace=True)
@@ -160,7 +161,7 @@ class TestSubBalancedDeviceSet(TestCase):
         ('uncntrld', Device('uncntrld', 24, (uncntrld, uncntrld))),
         ('scalable', IDevice2('scalable_bal_me', 24, (0., 2), (12, 18))),
         ('shiftable', CDevice('shiftable', 24, (0, 2), (12, 24), a=-0.5)),
-        ('generator', GDevice('generator_bal_me', 24, (-50,0), None, **{'cost_coeffs': cost})),
+        ('generator', GDevice('generator_bal_me', 24, (-50, 0), None, **{'cost_coeffs': cost})),
     ])
     return devices
 
@@ -170,7 +171,7 @@ class TestSubBalancedDeviceSet(TestCase):
     '''
     devices = self._test_devices()
     del devices['uncntrld']
-    for sbounds in [(-1,1), (-0.5,0.5)]: # (-0.4, 0.4)]:
+    for sbounds in [(-1, 1), (-0.5, 0.5)]:  # (-0.4, 0.4)]:
       device = SubBalancedDeviceSet('x', list(devices.values()), sbounds, labels=['_bal_me'])
       soln = solve(device, 0)[0]
       self.assertTrue((np.abs(soln[1] - np.ones(24)*sbounds[1]) <= 1e-6).all())
@@ -178,4 +179,4 @@ class TestSubBalancedDeviceSet(TestCase):
 
 
 if __name__ == '__main__':
-    unittest.main()
+  unittest.main()

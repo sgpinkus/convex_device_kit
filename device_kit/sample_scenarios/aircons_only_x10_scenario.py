@@ -10,9 +10,10 @@ meta = {
 }
 dimension = 24
 
+
 def make_deviceset():
   cost = np.ones((dimension, 4))*[0.045, 0.58, 0.24, 0]
-  bounds = (0,4)
+  bounds = (0, 4)
   return DeviceSet('site', [
     TDevice('ac01', dimension, bounds, **params()),
     TDevice('ac02', dimension, bounds, **params()),
@@ -26,7 +27,7 @@ def make_deviceset():
     TDevice('ac10', dimension, bounds, **params()),
     GDevice('supply', dimension, np.stack((-100*np.ones(dimension), np.zeros(dimension)), axis=1), **{'cost_coeffs': cost})
   ],
-  sbounds=(0,123)
+  sbounds=(0, 123)
   )
 
 

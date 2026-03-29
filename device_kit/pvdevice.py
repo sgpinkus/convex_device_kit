@@ -32,4 +32,3 @@ class PVDevice(Device):
     bounds = np.array(bounds)
     if not (self.hbounds <= 0).all():
       raise ValueError('hbounds must be <= 0')
-

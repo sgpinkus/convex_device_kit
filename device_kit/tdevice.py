@@ -82,7 +82,7 @@ class TDevice(Device):
   def deriv(self, s, p):
     ''' @override deriv() to do r to t conversion. Chain rule to account for r2t(). '''
     dt = self.deriv_t(self.r2t(s))
-    return (self.sustainment_matrix*dt.reshape(len(self),1)).sum(axis=0)*self.efficiency + p
+    return (self.sustainment_matrix*dt.reshape(len(self), 1)).sum(axis=0)*self.efficiency + p
 
   def hess(self, s, p=0):
     ''' Return hessian diagonal approximation. nd.Hessian takes long time. In testing so far

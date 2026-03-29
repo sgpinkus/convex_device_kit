@@ -10,7 +10,7 @@ meta = {
 
 def make_home(type, id):
   return DeviceSet(id,
-      devices=[
+                   devices=[
       make_ac(type, id),
       make_phev(type, id),
       make_washer(type, id),

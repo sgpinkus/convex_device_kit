@@ -11,17 +11,16 @@ Presume users also need to use their cars the next day. Users need a minimum amo
 they can charge some other place during the day so will only top up from home station beyond some minimum
 if it is cheap.
 '''
+from device_kit import *
+import numpy as np
 import sys
 import os
 sys.path.append(os.path.dirname(os.path.realpath(__file__ + '/../')))
-import numpy as np
-from device_kit import *
 
 
 meta = {
   'title': "20 EVs with 4 different charge windows\nearly(x3; 0-6am)/mid(x2; 0-12pm)/late(x1; 0-4pm)"
 }
-
 
 
 def make_deviceset():
@@ -49,11 +48,11 @@ def make_deviceset():
         if max_capacity > 0:
           bounds = np.stack((np.zeros(24), profiles[k][m]), axis=1)
           cbounds = [min(3, max_capacity), max_capacity]
-          _type = np.random.randint(0,4)
+          _type = np.random.randint(0, 4)
           params = {'p_h': -_type/4, 'p_l': -1}
           devices.append(CDevice2("%s-%s-%02d-%d" % (l, k, j, _type), 24, bounds, cbounds, **params))
   devices.append(make_gen())
-  return DeviceSet('site', devices, sbounds=(0,100))
+  return DeviceSet('site', devices, sbounds=(0, 100))
 
 
 def make_gen():

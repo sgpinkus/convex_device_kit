@@ -18,14 +18,14 @@ meta = {
 
 def make_deviceset():
   return DeviceSet('mg', [
-      make_home(type=1, id='home1', sbounds=(-10,10)),
-      make_home(type=1, id='home2', pv=True, sbounds=(-10,10)),
-      make_home(type=1, id='home3', sbounds=(-10,10)),
-      make_home(type=1, id='home4', pv=True, sbounds=(-10,10)),
-      make_home(type=2, id='home5', sbounds=(-10,10)),
-      make_home(type=2, id='home6', pv=True, sbounds=(-10,10)),
-      make_home(type=2, id='home7', sbounds=(-10,10)),
-      make_home(type=2, id='home8', pv=True, sbounds=(-10,10)),
+      make_home(type=1, id='home1', sbounds=(-10, 10)),
+      make_home(type=1, id='home2', pv=True, sbounds=(-10, 10)),
+      make_home(type=1, id='home3', sbounds=(-10, 10)),
+      make_home(type=1, id='home4', pv=True, sbounds=(-10, 10)),
+      make_home(type=2, id='home5', sbounds=(-10, 10)),
+      make_home(type=2, id='home6', pv=True, sbounds=(-10, 10)),
+      make_home(type=2, id='home7', sbounds=(-10, 10)),
+      make_home(type=2, id='home8', pv=True, sbounds=(-10, 10)),
       make_supply()
     ]
   )
@@ -34,10 +34,10 @@ def make_deviceset():
 def make_supply(type=1, id='supply'):
   ''' This doesn't work with LCL mechanism '''
   return DeviceSet(id,
-    devices=[
+                   devices=[
       make_gas_gen(type, 'gas'),
       make_battery(type, 'battery', max_rate=10, capacity=20),
-      make_pv(type, 'pv', max_rate=10, area=20, efficiency = 0.9)
+      make_pv(type, 'pv', max_rate=10, area=20, efficiency=0.9)
     ],
     sbounds=(-100, 100)
   )

@@ -55,7 +55,7 @@ class DeviceSet(BaseDevice):
     s = s.reshape(self.shape)
     p = p*np.ones(self.shape)
     return np.array(
-      [d.cost(s[i[0]:i[0]+i[1], :], p[i[0]:i[0]+i[1], :])  for d, i in zip(self.devices, self.partition)]
+      [d.cost(s[i[0]:i[0]+i[1], :], p[i[0]:i[0]+i[1], :]) for d, i in zip(self.devices, self.partition)]
     )
 
   def deriv(self, s, p):
@@ -103,16 +103,16 @@ class DeviceSet(BaseDevice):
     ''' Returns list of tuples: (offset of each child row, number of rows of child), for each child
     device.
     '''
-    offset = np.roll(self.shapes[:,0].cumsum(), 1)
+    offset = np.roll(self.shapes[:, 0].cumsum(), 1)
     offset[0] = 0
-    return np.array(list(zip(offset, self.shapes[:,0])), dtype=int)
+    return np.array(list(zip(offset, self.shapes[:, 0])), dtype=int)
 
   @property
   def slices(self):
     ''' Like partition but more useful. Maps devices on to slice flow matrix like `x[slice(_slice),:]`. '''
-    offset = np.roll(self.shapes[:,0].cumsum(), 1)
+    offset = np.roll(self.shapes[:, 0].cumsum(), 1)
     offset[0] = 0
-    return list(zip(self.devices, list(zip(offset, offset+self.shapes[:,0]))))
+    return list(zip(self.devices, list(zip(offset, offset+self.shapes[:, 0]))))
 
   @property
   def sbounds(self):
@@ -161,7 +161,7 @@ class DeviceSet(BaseDevice):
           c['jac'] = lambda s, i=i, f=constraint['jac']: zmm(s.reshape(shape), range(i[0], i[0]+i[1]), fn=f).reshape(flat_shape)
         constraints += [c]
     if self.sbounds is not None:
-      for i in range(0, len(self)): # for each time
+      for i in range(0, len(self)):  # for each time
         if self.sbounds[i][0] == self.sbounds[i][1]:
           constraints += [{
             'type': 'eq',
@@ -193,7 +193,6 @@ class DeviceSet(BaseDevice):
     )
     _str += ('\n' + '\t'*indent).join([''] + [d.to_str(indent+1) if hasattr(d, 'devices') else str(d) for d in self.devices])
     return _str
-
 
   def to_dict(self):
     ''' Dump object as a dict. '''

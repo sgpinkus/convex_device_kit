@@ -6,6 +6,7 @@ from device_kit import BaseDevice
 from device_kit.projection import *
 from warnings import warn
 
+
 class Device(BaseDevice):
   ''' BaseDevice implementation for single Device. '''
   _id = None              # The identifier of this device.
@@ -89,7 +90,7 @@ class Device(BaseDevice):
     ''' Returns array of (offset, length) tuples for each sub-device's mapping onto this device's
     flow matrix.
     '''
-    return np.array([[0,1]])
+    return np.array([[0, 1]])
 
   @property
   def bounds(self):
@@ -162,7 +163,7 @@ class Device(BaseDevice):
       self._cbounds = None
       return
     elif not hasattr(cbounds, '__len__'):
-      raise  ValueError('cbounds should be a list of 4-tuples or a 2-tuple')
+      raise ValueError('cbounds should be a list of 4-tuples or a 2-tuple')
     if len(cbounds) == 2 and not hasattr(cbounds[0], '__len__'):
       set_cbound(tuple(cbounds) + (0, len(self)))
     else:
@@ -173,7 +174,7 @@ class Device(BaseDevice):
   def params(self, params):
     ''' Convenience buld setter. '''
     for k, v in params.items():
-      setattr(self, k ,v)
+      setattr(self, k, v)
 
   def project(self, s):
     return self._feasible_region.project(s.reshape(len(self))).reshape(self.shape)

@@ -27,7 +27,7 @@ meta = {
 }
 basis = 48
 demand_bounds = (0, 2)
-supply_bounds = (-3,0)
+supply_bounds = (-3, 0)
 
 
 def make_deviceset():
@@ -36,7 +36,7 @@ def make_deviceset():
       'demand',
       basis,
       demand_bounds,
-      cbounds=(0,10),
+      cbounds=(0, 10),
       p_l=-1.4,
       p_h=-0
     ),
@@ -44,7 +44,7 @@ def make_deviceset():
       'supply',
       basis,
       supply_bounds,
-      cost_coeffs=[1,1,0]
+      cost_coeffs=[1, 1, 0]
     )
   ])
 

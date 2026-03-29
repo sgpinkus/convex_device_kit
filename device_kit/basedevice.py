@@ -137,8 +137,8 @@ class BaseDevice(ABC):
         for sub_device in device:
           for item in _leaf_devices(sub_device, fqid + s + sub_device.id, s):
             yield item
-      except:
-          yield (fqid, device)
+      except BaseException:
+        yield (fqid, device)
     items = []
     for item in _leaf_devices(self, self.id, '.'):
       items.append(item)
@@ -160,14 +160,13 @@ class BaseDevice(ABC):
     '''
     s = s.reshape(self.shape)
     for i, d in enumerate(self.leaf_devices()):
-      yield (d[0], s[i:i+1,:].reshape(len(self)))
+      yield (d[0], s[i:i+1, :].reshape(len(self)))
 
   def mapDevices(self, s):
     ''' Same as map but returns devices too. '''
     s = s.reshape(self.shape)
     for i, d in enumerate(self.leaf_devices()):
-      yield (d[0], d[1], s[i:i+1,:].reshape(len(self)))
-
+      yield (d[0], d[1], s[i:i+1, :].reshape(len(self)))
 
   def validate_bounds(self, bounds):
     ''' Validate Device style bounds specification. Convert to consistent format which is a

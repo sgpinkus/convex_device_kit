@@ -125,7 +125,7 @@ class Intersection(ConvexRegion):
     if not isinstance(b, ConvexRegion):
       raise ValueError('Intersection must be of two existing ConvexRegion type. Given type %s', (type(a),))
     if len(a) != len(b):
-      raise ValueError('Convex regions must have same dimensionality');
+      raise ValueError('Convex regions must have same dimensionality')
     self._a = a
     self._b = b
 
@@ -194,7 +194,7 @@ class List(ConvexRegion):
       raise ValueError("Wrong shape. Given %s, require %s" % (str(point.shape), str(self._shape)))
     for i, r in enumerate(self._regions):
       if self._axis == 0:
-        point[i,:] = r.project(point[i,:])
+        point[i, :] = r.project(point[i, :])
       else:
         point[:, i] = r.project(point[:, i])
     return point

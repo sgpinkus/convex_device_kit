@@ -19,7 +19,7 @@ def main():
     description='Load a device_kit scenario from some ambiguous builder export',
   )
   parser.add_argument('filename', action='store',
-    help='name of JSON file containing scenario to load'
+                      help='name of JSON file containing scenario to load'
   )
   args = parser.parse_args()
   logger.info(load_file(args.filename))
@@ -48,15 +48,15 @@ def load_load_device(d, basis: int):
   params = {}
   cost_function = load_cost_function(d, bounds, cbounds, basis)
   if cost_function:
-    params = { 'f': cost_function }
+    params = {'f': cost_function}
   return device_kit.ADevice(device_id, basis, bounds, cbounds, **params)
 
 
 def load_fixed_load_device(d, basis: int):
   device_id = d['title'] if 'title' in d else d['type']
-  #, id={device_id}')
+  # , id={device_id}')
   bounds = run_to_array(d['bounds'])
-  if (bounds[:,0] != bounds[:,1]).all():
+  if (bounds[:, 0] != bounds[:, 1]).all():
     raise Exception('Invalid fixed load device')
   return device_kit.ADevice(device_id, basis, bounds)
 
@@ -76,7 +76,7 @@ def load_storage_device(d, basis: int):
   }
   device_id = d['title'] if 'title' in d else d['type']
   bounds = run_to_array(d['bounds'])
-  params = { parameter_map[k]: v for k, v in d['parameters'].items() }
+  params = {parameter_map[k]: v for k, v in d['parameters'].items()}
   rate_clip = (None, None)
   if 'disChargeRateClippingFactor' in d['parameters']:
     rate_clip[0] = d['parameters']['disChargeRateClippingFactor']
@@ -89,13 +89,14 @@ def load_storage_device(d, basis: int):
 def load_supply_device(d, basis: int):
   device_id = d['title'] if 'title' in d else d['type']
   bounds = -1*run_to_array(d['bounds'])
-  bounds = np.array([bounds[:,1], bounds[:,0]])
+  bounds = np.array([bounds[:, 1], bounds[:, 0]])
   cbounds = load_cbounds(d)
   params = {}
   cost_function = load_cost_function(d, bounds, cbounds, basis)
   if cost_function:
-    params = { 'f': ReflectedFunction(cost_function) }
+    params = {'f': ReflectedFunction(cost_function)}
   return device_kit.ADevice(device_id, basis, bounds, cbounds, **params)
+
 
 def load_thermal_load_device(d, basis: int):
   parameter_map = {
@@ -108,7 +109,7 @@ def load_thermal_load_device(d, basis: int):
   }
   device_id = d['title'] if 'title' in d else d['type']
   bounds = run_to_array(d['bounds'])
-  params = { parameter_map[k]: v for k, v in d['parameters'].items() }
+  params = {parameter_map[k]: v for k, v in d['parameters'].items()}
   params['t_external'] = run_to_array(d['parameters']['externalTemperatureProfile'])
   params['t_range'] = run_to_array(d['parameters']['temperatureVariationCareFactor'])
   return device_kit.TDevice(device_id, basis, bounds, **params)
@@ -155,7 +156,7 @@ def run_to_array(run):
   shape = (run['basis'], len(item_template)) if hasattr(item_template, '__len__') else (run['basis'],)
   _array = np.zeros(shape)
   points = list(run['runs'].keys())
-  for i,v in enumerate(points):
+  for i, v in enumerate(points):
     e = int(points[i+1]) if i < len(points) - 1 else run['basis']
     _array[int(v):e] = run['runs'][v]
   return _array
@@ -164,10 +165,10 @@ def run_to_array(run):
 def run_to_cbounds_array(run):
   _array = []
   points = list(run['runs'].keys())
-  for i,v in enumerate(points):
+  for i, v in enumerate(points):
     [l, h] = run['runs'][v]
     e = int(points[i+1]) if i < len(points) - 1 else run['basis']
-    _array.append([l,h,int(v),e])
+    _array.append([l, h, int(v), e])
   return _array
 
 

@@ -35,16 +35,16 @@ def main():
     prog='device_kit'
   )
   parser.add_argument('filename', action='store',
-    help='name of a python module file containing scenario to run'
+                      help='name of a python module file containing scenario to run'
   )
   parser.add_argument('--loader', '-l', action='store', default='module', type=str,
-    help='loader to use to load scenario file')
+                      help='loader to use to load scenario file')
   args = parser.parse_args()
   loader = globals()[f'{args.loader}_loader']
   (deviceset, meta, cb) = loader.load_file(args.filename)
-  deviceset.sbounds = (0,0)
+  deviceset.sbounds = (0, 0)
   print(str(deviceset))
-  (x, solve_meta) = device_kit.solve(deviceset, solver_options={'ftol': 1e-6}, cb=Cb()) # Convenience convex solver.
+  (x, solve_meta) = device_kit.solve(deviceset, solver_options={'ftol': 1e-6}, cb=Cb())  # Convenience convex solver.
   print(solve_meta.message)
 
   df = pd.DataFrame.from_dict(dict(deviceset.map(x)), orient='index')
@@ -101,7 +101,7 @@ def main():
   df.to_csv(output_filename + '.csv', float_format='%.3f')
 
   print('Total Costs')
-  print(pd.Series({ _id: d.cost(_x, 0) for (_id, d, _x) in deviceset.mapDevices(x)}))
+  print(pd.Series({_id: d.cost(_x, 0) for (_id, d, _x) in deviceset.mapDevices(x)}))
   print('Total Flows')
   print(df.sum(axis=1))
 

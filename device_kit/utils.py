@@ -72,11 +72,11 @@ def zmm(x, keep, axis=0, fn=None):
   ''' Zero mask out rows/cols along axis not in keep index, applying fn(<kept>) if fn is provided. '''
   r = np.zeros(x.shape)
   if axis == 0:
-    i = x[keep,:]
-    r[keep,:] = fn(i).reshape(i.shape) if fn else i
+    i = x[keep, :]
+    r[keep, :] = fn(i).reshape(i.shape) if fn else i
   elif axis == 1:
-    i = x[:,keep]
-    r[:,keep] = fn(i).reshape(i.shape) if fn else i
+    i = x[:, keep]
+    r[:, keep] = fn(i).reshape(i.shape) if fn else i
   else:
     raise np.AxisError(axis)
   return r
@@ -92,10 +92,10 @@ def project(p, x0, bounds=[], constraints=[], solver_options={}):
   }
   options.update(solver_options)
   o = minimize(lambda s, p=p: ((s - p)**2).sum(), x0, method='SLSQP',
-    jac=lambda s, p=p: 2*(s - p),
-    options = options,
-    bounds = bounds,
-    constraints = constraints
+               jac=lambda s, p=p: 2*(s - p),
+               options=options,
+               bounds=bounds,
+               constraints=constraints
   )
   return (o.x.reshape(x0.shape), o)
 
@@ -103,8 +103,9 @@ def project(p, x0, bounds=[], constraints=[], solver_options={}):
 def flatten(x):
   return reduce(lambda a, b: list(a) + list(b), x, [])
 
+
 def get_device_by_id(deviceset, id):
   try:
     return list(filter(lambda v: v.id == id, deviceset.devices))[0]
-  except:
+  except BaseException:
     return None

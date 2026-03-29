@@ -27,11 +27,11 @@ class SubBalancedDeviceSet(DeviceSet):
     for labelled_set in sets:
       col_jac = np.zeros(shape[0])
       col_jac[labelled_set] = 1
-      for i in range(0, len(self)): # for each time
+      for i in range(0, len(self)):  # for each time
         constraints += [{
           'type': self.constraint_type,
           'fun': lambda s, i=i: self.sign*(s.reshape(shape)[:, i]*col_jac).sum(),
-          #'jac': lambda s, i=i, j=col_jac: self.sign*zmm(s.reshape(shape), i, axis=1, fn=lambda r: j).reshape(flat_shape)
+          # 'jac': lambda s, i=i, j=col_jac: self.sign*zmm(s.reshape(shape), i, axis=1, fn=lambda r: j).reshape(flat_shape)
         }]
     return constraints
 

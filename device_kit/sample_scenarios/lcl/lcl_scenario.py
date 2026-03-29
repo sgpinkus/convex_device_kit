@@ -31,7 +31,7 @@ def irandom():
 
 def make_deviceset():
   return DeviceSet('mg',
-    [
+                   [
       make_home(type=1, id='home1'),
       make_home(type=1, id='home2'),
       make_home(type=1, id='home3'),
@@ -45,7 +45,7 @@ def make_deviceset():
   )
 
 
-def make_home(type, id, battery=True, pv=False, sbounds=(0,100)):
+def make_home(type, id, battery=True, pv=False, sbounds=(0, 100)):
   devices = [
     make_ac(type, id),
     make_phev(type, id),
@@ -153,7 +153,7 @@ def make_battery(type, id, max_rate=1.8, capacity=5.5):
   return SDevice('battery', 24, [-max_rate, max_rate], **params)
 
 
-def make_pv(type, id, max_rate=3, area=5, efficiency = 0.9):
+def make_pv(type, id, max_rate=3, area=5, efficiency=0.9):
   ''' Not part of LCL scenario. '''
   solar_intensity = np.maximum(0, np.sin(np.linspace(0, np.pi*2, 24)))
   lbounds = -1*np.minimum(max_rate, solar_intensity*efficiency*area)

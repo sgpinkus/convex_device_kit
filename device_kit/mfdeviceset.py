@@ -17,7 +17,7 @@ class MFDeviceSet(DeviceSet):
   _devices = None         # Sub devices of this agent.
   _flows = None           # A sub device is created for each flow.
 
-  def __init__(self, device:BaseDevice, flows):
+  def __init__(self, device: BaseDevice, flows):
     ''' Setting reasonable bounds for the flow devices is somewhat tricky. We could use (-inf, inf),
     but that can lead to strangnesses. Instead, MFDeviceSet can only work with a device with all non
     -ve or all non +ve device (i.e. not a two way device) and the flow device bounds are set to
@@ -35,7 +35,7 @@ class MFDeviceSet(DeviceSet):
     self._devices = []
     if (device.lbounds < 0).any():
       bounds = (device.lbounds, np.zeros(len(device)))
-    else: # (device.hbound > 0).any():
+    else:  # (device.hbound > 0).any():
       bounds = (np.zeros(len(device)), device.hbounds)
     for flow in flows:
       self._devices.append(Device(flow, len(device), bounds))
@@ -52,7 +52,7 @@ class MFDeviceSet(DeviceSet):
 
   def deriv(self, s, p):
     s = s.reshape(self.shape)
-    return np.repeat(self._device.deriv(s.sum(axis=0), 0).reshape(1,len(self)), self.shape[0], axis=0).reshape(self.shape) + p
+    return np.repeat(self._device.deriv(s.sum(axis=0), 0).reshape(1, len(self)), self.shape[0], axis=0).reshape(self.shape) + p
 
   def hess(self, s, p=0):
     return self._device.hess(s.sum(axis=0), 0)
@@ -101,4 +101,3 @@ class MFDeviceSet(DeviceSet):
   def __getattr__(self, name):
     ''' Delegate methods and props to device '''
     return getattr(self._device, name)
-

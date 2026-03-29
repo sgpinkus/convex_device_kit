@@ -26,8 +26,8 @@ def step(device, p, s, stepsize=1, solver_options={}):
     lambda x, p=p: device.cost(s + x*(s_next - s), p),
     0.,
     method='SLSQP',
-    bounds = [(0, 1)],
-    options = solver_options,
+    bounds=[(0, 1)],
+    options=solver_options,
   )
   if not ol.success:
     if ol.status == 8:
@@ -65,7 +65,7 @@ def solve(device, p=0, s0=None, solver_options={}, prox=None, cb=None):
 
   args = {
     'fun': lambda s, p=p: device.cost(s, p),
-    'x0':  s0,
+    'x0': s0,
     'jac': lambda s, p=p: device.deriv(s, p),
     'method': 'SLSQP',
     'bounds': device.bounds,
@@ -100,7 +100,7 @@ class OptDebugCb():
 
 class OptimizationException(Exception):  # pragma: no cover
   ''' Some type of optimization error. '''
-  o = None # An optional optimization method specific status report (i.e. OptimizeResult).
+  o = None  # An optional optimization method specific status report (i.e. OptimizeResult).
 
   def __init__(self, *args):
     self.o = args[0] if args else None

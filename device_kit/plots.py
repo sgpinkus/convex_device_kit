@@ -10,12 +10,12 @@ import matplotlib.pyplot as plt
 from device_kit import DeviceSet
 
 _colors = ['red', 'orange', 'yellow', 'purple', 'fuchsia', 'lime', 'green', 'blue', 'navy', 'black']
-ylim  = (None, None)
+ylim = (None, None)
 
 
 def plot_dataframe_as_bars(df, title, filename, aggregation_level=2):
   df_sums = df.groupby(lambda l: '.'.join(l.split('.')[0:aggregation_level])).sum()
-  cm=plt.get_cmap('Paired', len(df_sums)+1)
+  cm = plt.get_cmap('Paired', len(df_sums)+1)
   f = plt.figure(0)
   for (i, (device_label, r)) in enumerate(df_sums.iterrows()):
     plt.bar(range(0, len(df.columns)), r, label=device_label, width=1, edgecolor=cm.colors[i], fill=False, linewidth=1)

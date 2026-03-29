@@ -29,7 +29,7 @@ meta = {
 Load requires exactly 12kWh at any time between [04:00-19:00] '''
 }
 dimension = 24
-phase=0 # np.pi/4
+phase = 0  # np.pi/4
 cost = np.stack((
   2*np.sin(np.linspace(0+phase, np.pi+phase, dimension))+1,
   np.ones(dimension)*0.001,
@@ -54,22 +54,22 @@ def make_deviceset():
       'demand',
       dimension,
       bounds,
-      (12,12),
-      **{ 'c': 1 }
+      (12, 12),
+      **{'c': 1}
     ),
     BlobDevice(
       'demand2',
       dimension,
       bounds,
-      (12,12),
-      **{ 'c': 1 }
+      (12, 12),
+      **{'c': 1}
     ),
     BlobDevice(
       'demand3',
       dimension,
       bounds,
-      (12,12),
-      **{ 'c': 1 }
+      (12, 12),
+      **{'c': 1}
     ),
     GDevice(
       'supply',
@@ -87,4 +87,4 @@ def matplot_network_writer_hook(event, fig, writer=None):
   p = Poly2D(cost)
   fig.axes[0].set_xlim(0, 30)
   fig.axes[0].plot(p.vector(np.ones(dimension)), label='quad_cost')
-  fig.axes[0].set_ylim(0,6)
+  fig.axes[0].set_ylim(0, 6)

@@ -1,9 +1,9 @@
+import numpy as np
+from device_kit.projection import *
+from unittest import TestCase
 import sys
 import os
 sys.path.append(os.path.dirname(os.path.realpath(__file__ + '/../')))
-from unittest import TestCase
-from device_kit.projection import *
-import numpy as np
 
 
 class TestBaseDevice(TestCase):

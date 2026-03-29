@@ -20,7 +20,7 @@ def make_deviceset():
     DeviceSet(
       'home',
       make_home_devices(),
-      sbounds=(0,100),
+      sbounds=(0, 100),
     ),
     make_supply_device()
   ])
@@ -99,7 +99,7 @@ def make_home_devices():
       'demand',
       24,
       blob_bounds,
-      (6,15),
+      (6, 15),
       **{'c': 0.01}
     ),
   ]
@@ -112,6 +112,6 @@ def make_supply_device():
     24,
     stack((-50 * ones(24), zeros(24)), axis=1),
     None,
-    #{'cost_coeffs': stack((sin(linspace(0,pi,dimension))*0.001+0.005, ones(dimension)*0.005, zeros(dimension)), axis=1)
+    # {'cost_coeffs': stack((sin(linspace(0,pi,dimension))*0.001+0.005, ones(dimension)*0.005, zeros(dimension)), axis=1)
     **{'cost_coeffs': [0.06, 0.024, 0]}
   )

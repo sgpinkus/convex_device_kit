@@ -69,7 +69,7 @@ class GDevice(Device):
       self._cost_d2_fn = self._cost_fn.deriv(2)
     elif np.array(cost).ndim == 2:
       self._cost_fn = lambda x: Poly2D(cost).vector(x)
-      self._cost_d1_fn = lambda x:Poly2D(cost).deriv(x)
+      self._cost_d1_fn = lambda x: Poly2D(cost).deriv(x)
       self._cost_d2_fn = lambda x: Poly2D(cost).hess(x)
     else:
       raise ValueError('cost param must be array with 1 or 2 dimensions.')

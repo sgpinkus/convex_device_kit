@@ -4,11 +4,14 @@ import matplotlib.pyplot as plt
 import device_kit
 from device_kit import *
 
+
 def random_uncontrolled():
-  return np.maximum(0, 0.5+np.cumsum(np.random.uniform(-1,1, 24)))
+  return np.maximum(0, 0.5+np.cumsum(np.random.uniform(-1, 1, 24)))
+
 
 def generator_cost_curve():
   return np.stack((np.sin(np.linspace(0, np.pi, 24))*0.5+0.1, np.ones(24)*0.001, np.zeros(24)), axis=1)
+
 
 def make_model():
   ''' Small power network model. '''
@@ -22,20 +25,21 @@ def make_model():
           Device('uncontrolled', 24, (2*random_uncontrolled(),)),
           SDevice('buffer', 24, (-7, 7), c1=0.1, capacity=70, sustainment=1, efficiency=1)
         ],
-        sbounds=(0,10) # max capacity constraint.
+        sbounds=(0, 10)  # max capacity constraint.
       ),
     ],
-    sbounds=(0,0) # balanced flow constraint.
+    sbounds=(0, 0)  # balanced flow constraint.
   )
   return model
 
+
 def main():
   model = make_model()
-  (x, solve_meta) = device_kit.solve(model, p=0) # Convenience convex solver.
+  (x, solve_meta) = device_kit.solve(model, p=0)  # Convenience convex solver.
   print(solve_meta.message)
   df = pd.DataFrame.from_dict(dict(model.map(x)), orient='index')
   df.loc['total'] = df.sum()
-  supply_side, _slice = [(d,s) for (d,s) in model.slices if d.id == 'generator'][0]
+  supply_side, _slice = [(d, s) for (d, s) in model.slices if d.id == 'generator'][0]
   df.loc['price'] = -1*supply_side.deriv(x[slice(*_slice), :], p=0)
   pd.set_option('display.float_format', lambda v: '%+0.3f' % (v,),)
   print(df.sort_index())
@@ -43,7 +47,8 @@ def main():
   df.transpose().plot(drawstyle='steps', grid=True)
   plt.ylabel('Power (kWh)')
   plt.xlabel('Time (H)')
-  plt.savefig('synopsis.png');
+  plt.savefig('synopsis.png')
+
 
 if __name__ == '__main__':
   main()

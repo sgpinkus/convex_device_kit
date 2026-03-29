@@ -1,15 +1,15 @@
+from device_kit.functions import Poly2D
+from device_kit.utils import sustainment_matrix
+from device_kit.solve import solve, OptimizationException
+from device_kit import *
+from unittest import TestCase
+import unittest
+from copy import deepcopy
+from scipy import ndimage
+import numpy as np
 import sys
 import os
 sys.path.append(os.path.dirname(os.path.realpath(__file__ + '/../')))
-import numpy as np
-from scipy import ndimage
-from copy import deepcopy
-import unittest
-from unittest import TestCase
-from device_kit import *
-from device_kit.solve import solve, OptimizationException
-from device_kit.utils import sustainment_matrix
-from device_kit.functions import Poly2D
 
 
 np.set_printoptions(
@@ -33,7 +33,7 @@ zeros = np.zeros(24)
 
 # Device
 test_device = {
-  'id':'test',
+  'id': 'test',
   'length': 24,
   'bounds': [(0.11098505, 0.73401641), (0.16957934, 0.20297378), (0.06926077, 0.41622013), (0.36589927, 0.91650255), (0.24329407, 0.65472194), (0.29358734, 0.61163406), (0.08356067, 0.67125244), (0.10659574, 0.68789302), (0.36779274, 0.60779149), (0.40205272, 1.37443838), (0.77592892, 1.05536045), (0.80435839, 1.37691422), (0.34357759, 0.89649611), (0.36303363, 0.48074482), (0.97522713, 1.10429662), (0.50986841, 0.76206089), (0.86281828, 1.34641641), (0.22111678, 0.92726414), (0.68289869, 0.99868162), (0.01570868, 0.13552611), (0.80499837, 0.84452731), (0.28573255, 0.64946374), (0.71161904, 1.62050741), (0.62565335, 1.46114493)],
   'cbounds': (1, 24),
@@ -42,7 +42,7 @@ test_device = {
 test_device_simple = {
   'id': 'test',
   'length': 24,
-  'bounds': (0,10),
+  'bounds': (0, 10),
   'cbounds': (10, 24),
 }
 # CDevice
@@ -98,7 +98,7 @@ test_idevice_simple = {
 test_sdevice = {
   'id': 'test_sdevice',
   'length': 24,
-  'bounds': (-5,5),
+  'bounds': (-5, 5),
   'cbounds': None,
   'c1': 1,
   'c2': 0,
@@ -203,7 +203,7 @@ class TestBaseDevice(TestCase):
       device = Device(**_test_device)
 
   def test_mixed_bounds(self):
-    cases = [(0,1), (0,0), [0, np.ones(24)], (np.zeros(24), 2), [np.zeros(24)], (np.zeros(24),)]
+    cases = [(0, 1), (0, 0), [0, np.ones(24)], (np.zeros(24), 2), [np.zeros(24)], (np.zeros(24),)]
     device = Device(**deepcopy(test_device))
     device.bounds = device.bounds
     for bounds in cases:
@@ -308,7 +308,7 @@ class TestCDevice2(TestCase):
     p = np.zeros(24,)
     self.assertAlmostEqual(device.cost(r, p), 0.6375, 3)
     self.assertEqual(device.deriv(r, p).shape, (24,))
-    self.assertEqual(device.hess(r, p).shape, (24,24))
+    self.assertEqual(device.hess(r, p).shape, (24, 24))
 
 
 class TestIDevice(TestCase):
@@ -387,7 +387,6 @@ class TestTDevice(TestCase):
     device = self.get_test_device_heat()
     self.assertTrue((device.r2t(np.ones((1, len(device)))) <= device.t_base).all())
 
-
   def test_solve(self):
     ''' Test solving. This is the reason ftol is set to such a high default values. '''
     p = np.ones(24)
@@ -428,15 +427,15 @@ class TestTDevice(TestCase):
 
 class TestConstrainedTDevice(TestCase):
 
-    @unittest.skip('Not implemented')
-    def test_constraints(self):
-      device = self.get_test_device_agent()
-      r = np.zeros(len(device))
-      satisfied = np.array([device.min_constraint(r, i) for i in range(0, len(device))])
-      self.assertTrue((satisfied[0:4] < 0).all())
-      self.assertTrue((satisfied[4:22] > 0).all())
-      satisfied = np.array([device.max_constraint(r, i) for i in range(0, len(device))])
-      self.assertTrue((satisfied[7:20] >= 0.).all())
+  @unittest.skip('Not implemented')
+  def test_constraints(self):
+    device = self.get_test_device_agent()
+    r = np.zeros(len(device))
+    satisfied = np.array([device.min_constraint(r, i) for i in range(0, len(device))])
+    self.assertTrue((satisfied[0:4] < 0).all())
+    self.assertTrue((satisfied[4:22] > 0).all())
+    satisfied = np.array([device.max_constraint(r, i) for i in range(0, len(device))])
+    self.assertTrue((satisfied[7:20] >= 0.).all())
 
 
 class TestGDevice(TestCase):
@@ -522,7 +521,7 @@ class TestSDevice(TestCase):
     ''' No window specified '''
     with self.assertRaises(ValueError):
       d = self.get_test_device()
-      d.rate_clip = (0,2)
+      d.rate_clip = (0, 2)
 
   def test_sdevice_charge_at(self):
     d = self.get_test_device()
@@ -530,9 +529,9 @@ class TestSDevice(TestCase):
     self.assertTrue((d.charge_at(r) == np.arange(6, 24+6)).all())
     d.sustainment = 0.5
     self.assertTrue((np.abs(d.charge_at(r*2) - np.array([4.500000, 4.250000, 4.125000, 4.062500, 4.031250, 4.015625, 4.007812, 4.003906, 4.001953, 4.000977, 4.000488, 4.000244, 4.000122, 4.000061, 4.000031, 4.000015, 4.000008, 4.000004, 4.000002, 4.000001, 4.000000, 4.000000, 4.000000, 4.000000])) < 1e-5).all())
-    self.assertEqual(SDevice('test', 24, (-1,1), start=0.0).base(), 0)
-    self.assertEqual(SDevice('test', 24, (-1,1), start=0.1, capacity=1).base(), 0.1)
-    self.assertEqual(SDevice('test', 24, (-1,1), start=0.1, capacity=1).charge_at(np.zeros(24))[23], 0.1)
+    self.assertEqual(SDevice('test', 24, (-1, 1), start=0.0).base(), 0)
+    self.assertEqual(SDevice('test', 24, (-1, 1), start=0.1, capacity=1).base(), 0.1)
+    self.assertEqual(SDevice('test', 24, (-1, 1), start=0.1, capacity=1).charge_at(np.zeros(24))[23], 0.1)
 
   @classmethod
   def get_test_device(cls):
@@ -543,8 +542,8 @@ class TestWindowDevice(TestCase):
   ''' Very rudimentary testing of WindowDevice ... '''
 
   def test_windowdevice(self):
-    d = WindowDevice('i', 10, (0,1), 3)
-    x = np.roll(np.eye(10,1), 4).reshape(10,)
+    d = WindowDevice('i', 10, (0, 1), 3)
+    x = np.roll(np.eye(10, 1), 4).reshape(10,)
     self.assertEqual(d.cost(x, 0), 0.)
     x = ndimage.binary_dilation(x).astype(float)
     self.assertEqual(d.cost(x, 0), 0.)
@@ -557,7 +556,7 @@ class TestWindowDevice(TestCase):
   def test_invalid_settings(self):
     ''' No window specified '''
     with self.assertRaises(TypeError):
-      d = WindowDevice('i', 10, (0,1))
+      d = WindowDevice('i', 10, (0, 1))
 
 
 class TesDevicesDerivHess(TestCase):
@@ -603,4 +602,4 @@ class TestUtil(TestCase):
 
 
 if __name__ == '__main__':
-    unittest.main()
+  unittest.main()

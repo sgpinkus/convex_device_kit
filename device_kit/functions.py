@@ -143,13 +143,13 @@ class Poly2DOffset(Function):
   def deriv(self, x):
     if not self._deriv:
       _coeffs = [np.polyadd(np.zeros(len(c)), np.poly1d(c).deriv().coeffs) for c in self.coeffs]
-      self._deriv = Poly2DOffset(np.concatenate((_coeffs, self.offsets.reshape((len(self),1))), axis=1))
+      self._deriv = Poly2DOffset(np.concatenate((_coeffs, self.offsets.reshape((len(self), 1))), axis=1))
     return self._deriv.vector(x)
 
   def hess(self, x):
     if not self._hess:
       _coeffs = [np.polyadd(np.zeros(len(c)), np.poly1d(c).deriv(2).coeffs) for c in self.coeffs]
-      self._hess = Poly2DOffset(np.concatenate((_coeffs, self.offsets.reshape((len(self),1))), axis=1))
+      self._hess = Poly2DOffset(np.concatenate((_coeffs, self.offsets.reshape((len(self), 1))), axis=1))
     return np.diag(self._hess.vector(x))
 
 
@@ -211,14 +211,14 @@ class RangesFunction(Function):
   def deriv(self, x):
     x = x.reshape((len(self),))
     range_derivs = [self.functions[k].deriv(x[range(*_range)]) for k, _range in enumerate(self.ranges)]
-    return np.array(reduce(lambda a, b: list(a) + list(b), range_derivs, [])) # np.flatten() or "+" doesn't work with inhomogenous.
+    return np.array(reduce(lambda a, b: list(a) + list(b), range_derivs, []))  # np.flatten() or "+" doesn't work with inhomogenous.
 
   def hess(self, x):
     x = x.reshape((len(self),))
     range_hessians = [self.functions[k].hess(x[range(*_range)]) for k, _range in enumerate(self.ranges)]
     y = np.zeros((len(self), len(self)))
     for i, m in zip([r[0] for r in self.ranges], range_hessians):
-      y[i:i+m.shape[0],i:i+m.shape[1]] = m
+      y[i:i+m.shape[0], i:i+m.shape[1]] = m
     return y
 
   def _validate_ranges(self, ranges):
@@ -246,13 +246,14 @@ class InnerSumFunction(Function):
   def hess(self, x):
     return self.outer_function.hess(np.array(x).sum())*np.eye(len(x))
 
+
 class InformationEntropy():
   ''' Information entropy preference function. Entropy is bad.
   @todo define deriv() and hess() numerically.
   '''
 
   def __init__(self, c=1):
-    self.c = c # Scalar coefficient.
+    self.c = c  # Scalar coefficient.
 
   def __call__(self, r):
     return self.c*InformationEntropy.info_entropy(r)
@@ -276,7 +277,7 @@ class TemporalVariance():
   '''
 
   def __init__(self, c=1):
-    self.c = c # Scalar coefficient.
+    self.c = c  # Scalar coefficient.
 
   def __call__(self, r):
     return self.c*TemporalVariance.inertia(r)
@@ -302,8 +303,8 @@ class CobbDouglas():
   ''' Cobb Douglas *with* constant returns to scale. '''
 
   def __init__(self, a, c=1):
-    self.a = a # Cobb Douglas coefficients.
-    self.c = c # Scalar coefficient.
+    self.a = a  # Cobb Douglas coefficients.
+    self.c = c  # Scalar coefficient.
 
   def __call__(self, r):
     return self.c*CobbDouglas.cobb_douglas(r, self.a)

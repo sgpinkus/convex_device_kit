@@ -13,8 +13,10 @@ d1 = GDevice(
   }
 )
 
+
 def cost(x, d):
   return d.costv(np.ones(basis)*x, 0)[0]
+
 
 def deriv(x, d):
   return d.deriv(np.ones(basis)*x, 0)[0]

@@ -1,11 +1,11 @@
+from device_kit.utils import *
+from unittest import TestCase
+import unittest
+from copy import deepcopy
+import numpy as np
 import sys
 import os
 sys.path.append(os.path.dirname(os.path.realpath(__file__ + '/../')))
-import numpy as np
-from copy import deepcopy
-import unittest
-from unittest import TestCase
-from device_kit.utils import *
 
 
 class TestBaseDevice(TestCase):
@@ -18,4 +18,4 @@ class TestBaseDevice(TestCase):
 
 
 if __name__ == '__main__':
-    unittest.main()
+  unittest.main()

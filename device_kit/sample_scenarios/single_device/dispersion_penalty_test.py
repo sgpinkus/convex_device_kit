@@ -51,8 +51,8 @@ def make_deviceset():
       'demand',
       dimension,
       bounds,
-      (12,12),
-      **{ 'c': 1 }
+      (12, 12),
+      **{'c': 1}
     ),
     GDevice(
       'supply',
@@ -69,4 +69,4 @@ def matplot_network_writer_hook(event, fig, writer=None):
     return
   p = Poly2D(cost)
   fig.axes[0].plot(p.vector(np.ones(dimension)), label='quad_cost')
-  fig.axes[0].set_ylim(0,6)
+  fig.axes[0].set_ylim(0, 6)

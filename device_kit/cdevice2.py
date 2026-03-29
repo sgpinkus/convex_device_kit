@@ -52,7 +52,7 @@ class CDevice2(Device):
   def _validate_param(self, p):
     v = np.array(p)
     if not (v.ndim == 0 or len(v) == len(self)):
-        raise ValueError('param must be scalar or same length as device (%d)' % (len(self),))
+      raise ValueError('param must be scalar or same length as device (%d)' % (len(self),))
     if not (v <= 0).all():
       raise ValueError('param must be <= 0')
     return v

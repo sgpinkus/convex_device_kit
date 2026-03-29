@@ -34,6 +34,7 @@ class WindowDevice(ADevice):
   def w(self, w):
     self._w = w
 
+
 class WindowPenalty(Function):
   ''' @todo deriv() is not correct?
   '''
