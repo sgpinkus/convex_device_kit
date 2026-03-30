@@ -1,9 +1,9 @@
 import logging
+
 import numpy as np
 from scipy.optimize import minimize
-from abc import ABC, abstractmethod
-from device_kit.utils import project
 
+from device_kit.utils import project
 
 logger = logging.getLogger(__name__)
 

@@ -1,7 +1,9 @@
 import re
-import numpy as np
 from collections import OrderedDict
-from device_kit import *
+
+import numpy as np
+
+from .deviceset import DeviceSet
 
 
 class SubBalancedDeviceSet(DeviceSet):

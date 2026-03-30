@@ -1,8 +1,8 @@
 import numpy as np
-from device_kit import *
 
-
-from logging import debug, info, warn, exception, error
+from .basedevice import BaseDevice
+from .device import Device
+from .deviceset import DeviceSet
 
 
 class MFDeviceSet(DeviceSet):

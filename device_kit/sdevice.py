@@ -1,7 +1,8 @@
-import numpy as np
 import numdifftools as nd
-from device_kit import Device
-from device_kit.utils import base_soc, soc, sustainment_matrix
+import numpy as np
+
+from .device import Device
+from .utils import base_soc, soc, sustainment_matrix
 
 
 class SDevice(Device):

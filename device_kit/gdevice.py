@@ -1,5 +1,6 @@
 import numpy as np
-from device_kit import Device
+
+from .device import Device
 from .functions import Poly2D
 
 

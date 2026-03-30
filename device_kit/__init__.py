@@ -1,21 +1,21 @@
-from .basedevice import BaseDevice
-from .utils import care2bounds, on2bounds, zmm, project
-from .solve import solve, step, OptimizationException
-from .device import Device
-from .cdevice import CDevice
-from .idevice import IDevice
-from .tdevice import TDevice
-from .sdevice import SDevice
-from .pvdevice import PVDevice
-from .gdevice import GDevice
 from .adevice import ADevice
-from .idevice2 import IDevice2
+from .basedevice import BaseDevice
+from .cdevice import CDevice
 from .cdevice2 import CDevice2
-from .windowdevice import WindowDevice
+from .device import Device
 from .deviceset import DeviceSet
-from .subbalanceddeviceset import SubBalancedDeviceSet
+from .gdevice import GDevice
+from .idevice import IDevice
+from .idevice2 import IDevice2
 from .mfdeviceset import MFDeviceSet
+from .pvdevice import PVDevice
+from .sdevice import SDevice
+from .solve import OptimizationException, solve, step
+from .subbalanceddeviceset import SubBalancedDeviceSet
+from .tdevice import TDevice
 from .tworatiomfdeviceset import TwoRatioMFDeviceSet
+from .utils import care2bounds, on2bounds, project, zmm
+from .windowdevice import WindowDevice
 
 __all__ = [
   'BaseDevice', 'DeviceSet', 'SubBalancedDeviceSet',

@@ -2,12 +2,8 @@
 Convenience functions for plotting tables of data.
 '''
 
-from os.path import splitext, basename
-import logging
-import numpy as np
-import pandas as pd
 import matplotlib.pyplot as plt
-from device_kit import DeviceSet
+import numpy as np
 
 _colors = ['red', 'orange', 'yellow', 'purple', 'fuchsia', 'lime', 'green', 'blue', 'navy', 'black']
 ylim = (None, None)
