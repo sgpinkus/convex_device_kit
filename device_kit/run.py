@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
 ''' Convenience script to just solve for outright cost minimized balanced flow - no market sim crap.
 '''
-from os import mkdir
-from os.path import splitext, basename, exists
+import argparse
 import logging
+from os import mkdir
+from os.path import basename, exists, splitext
+
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-import argparse
+
 import device_kit
-from device_kit.loaders import builder_loader, module_loader
+
 # from device_kit.utils import get_device_by_id
 from device_kit.plots import *
-
 
 logging.basicConfig()
 logger = logging.getLogger()

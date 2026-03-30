@@ -1,12 +1,19 @@
-import re
 import logging
 import numbers
-import numpy as np
-from abc import ABC, abstractmethod
+import re
 import warnings
+from abc import ABC, abstractmethod
+from collections.abc import Collection
+from typing import Any, Generator
 
+import numpy as np
+from numpy.typing import NDArray
+
+from .typings import Constraint, Number
 
 logger = logging.getLogger(__name__)
+
+IntPairSeq = list[tuple[int, int]] | tuple[tuple[int, int], ...] | NDArray[np.int_]
 
 
 class BaseDevice(ABC):
@@ -42,23 +49,23 @@ class BaseDevice(ABC):
   '''
 
   @abstractmethod
-  def __len__(self):
+  def __len__(self) -> int:
     pass
 
   @abstractmethod
-  def cost(self, s, p):
+  def cost(self, s: NDArray[np.number], p: NDArray[np.number] | Number) -> float:
     ''' Scalar cost for `s` at `p`. `s` should have the same shape as this Device. '''
     pass
 
   @abstractmethod
-  def deriv(self, s, p):
+  def deriv(self, s: NDArray[np.number], p: NDArray[np.number] | Number) -> NDArray[np.number]:
     ''' Derivative of cost for `s` at `p`. `s` should have the same shape as this Device.
     Return value has same shape as `s`.
     '''
     pass
 
   @abstractmethod
-  def hess(self, s, p=0):
+  def hess(self, s: NDArray[np.number], p: NDArray[np.number] | Number = 0.0) -> NDArray[np.number]:
     ''' Hessian of cost for `s` at `p` - normally p should fall out. `s` should have the same
     shape as this Device *but* the return value has shape (len, len).
     '''
@@ -66,29 +73,29 @@ class BaseDevice(ABC):
 
   @property
   @abstractmethod
-  def id(self):
+  def id(self) -> str:
     pass
 
   @property
   @abstractmethod
-  def length(self):
+  def length(self) -> int:
     pass
 
   @property
   @abstractmethod
-  def shape(self):
+  def shape(self) -> tuple[int, int]:
     ''' Return absolute shape of device flow matrix. '''
     pass
 
   @property
   @abstractmethod
-  def shapes(self):
+  def shapes(self) -> NDArray[np.number]:
     ''' Array of shapes of sub devices, if any, else [shape]. '''
     pass
 
   @property
   @abstractmethod
-  def partition(self):
+  def partition(self) -> IntPairSeq:
     ''' Returns array of (offset, length) tuples for each sub-device's mapping onto this device's
     flow matrix.
     '''
@@ -96,64 +103,65 @@ class BaseDevice(ABC):
 
   @property
   @abstractmethod
-  def bounds(self):
+  def bounds(self) -> NDArray[np.number]:
     pass
 
   @property
   @abstractmethod
-  def lbounds(self):
+  def lbounds(self) -> NDArray[np.number]:
     pass
 
   @property
   @abstractmethod
-  def hbounds(self):
+  def hbounds(self) -> NDArray[np.number]:
     pass
 
   @property
   @abstractmethod
-  def constraints(self):
+  def constraints(self) -> Collection[Constraint]:
     pass
 
   @abstractmethod
-  def project(self, s):
+  def project(self, s: NDArray[np.number]) -> NDArray[np.number]:
     ''' project `s` into cnvx space of this device a return point. Not guaranteed - reasonable effort only.
     Input value may or may not be flattened, return value should have shape of device.
     '''
     pass
 
   @abstractmethod
-  def to_dict(self):
+  def to_dict(self) -> dict[str, Any]:
     pass
 
-  def leaf_devices(self):
+  def leaf_devices(self) -> Collection[tuple[str, "BaseDevice"]]:
     ''' Iterate over flat list of (fqid, device) tuples for leaf devices from an input BaseDevice.
     fqid is the id of the leaf device prepended with the dot separated ids of parents. The input device
     may be atomic or a composite. The function distinguishes between them via support for iteration.
     An ordered list is returned so the key offset indicates the row offset (under the invariant that
     atomic leaf devices have shape (1,N)). Ex {v: k for k, v in enumerate(OrderedDict(x).keys())}
     '''
-    def _leaf_devices(device, fqid, s='.'):
+    def _leaf_devices(device: "BaseDevice", fqid: str, s: str = '.') -> Generator[tuple[str, "BaseDevice"]]:
       try:
-        for sub_device in device:
-          for item in _leaf_devices(sub_device, fqid + s + sub_device.id, s):
+        for sub_device in device:  # type: ignore
+          for item in _leaf_devices(sub_device, fqid + s + sub_device.id, s):  # type: ignore
             yield item
       except BaseException:
         yield (fqid, device)
-    items = []
+
+    items: list[tuple[str, "BaseDevice"]] = []
     for item in _leaf_devices(self, self.id, '.'):
       items.append(item)
     return items
 
-  def get(self, name):
+  def get(self, name: str) -> "BaseDevice":
     ''' Convenience methor to get a single leaf device named 'name'. If greater than one device has
     name an expection is raised. Also see find.
     '''
     return [v for k, v in dict(self.leaf_devices()).items() if k.endswith(name)][0]
 
-  def find(self, regexp):
+  def find(self, regexp: str) -> list["BaseDevice"]:
     return [v for k, v in dict(self.leaf_devices()).items() if re.match(regexp, k)]
 
-  def map(self, s):
+  def map(self, s: NDArray[np.number]) -> Generator[tuple[str, NDArray[np.number]]]:
     ''' maps rows of flow matrix `s` to identifiers of atomic devices under this device. Returns
     list of tuples.  You can load this into Pandas like pd.DataFrame(dict(device.map(s))).
     Note this implementation assumes that all leaf devices have shape (1,X).
@@ -162,13 +170,13 @@ class BaseDevice(ABC):
     for i, d in enumerate(self.leaf_devices()):
       yield (d[0], s[i:i+1, :].reshape(len(self)))
 
-  def mapDevices(self, s):
+  def mapDevices(self, s: NDArray[np.number]):
     ''' Same as map but returns devices too. '''
     s = s.reshape(self.shape)
     for i, d in enumerate(self.leaf_devices()):
       yield (d[0], d[1], s[i:i+1, :].reshape(len(self)))
 
-  def validate_bounds(self, bounds):
+  def validate_bounds(self, bounds: Any) -> NDArray[np.float64]:  # type: ignore
     ''' Validate Device style bounds specification. Convert to consistent format which is a
     (len(self), 2) shaped ndarray. Input must have length shape (len(self), 2), or len 1 or len 2.
     Presents a conflict when len(self) = 1 or 3. The former input shape takes precedence and if
@@ -208,11 +216,11 @@ class BaseDevice(ABC):
     bounds = np.array(bounds)
     lbounds = np.array(bounds[:, 0])
     hbounds = np.array(bounds[:, 1])
-    if not np.vectorize(lambda v: v is None)(bounds).all() and not (hbounds - lbounds >= 0).all():
+    if not np.vectorize(lambda v: v is None)(bounds).all() and not (hbounds - lbounds >= 0).all():  # type: ignore
       raise ValueError('max bound must be >= min bound for all min/max bound pairs: %s' % (str(hbounds - lbounds),))
     return bounds
 
   @classmethod
-  def from_dict(cls, d):
+  def from_dict(cls, d: dict[Any, Any]):
     ''' Just call constructor. Nothing special to do. '''
     return cls(**d)

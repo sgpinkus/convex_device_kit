@@ -1,5 +1,4 @@
-from .projection import ConvexRegion, HyperCube, HalfSpace, Slice, Intersection, List
-
+from .projection import ConvexRegion, HalfSpace, HyperCube, Intersection, List, Slice
 
 __all__ = [
   'ConvexRegion', 'HyperCube', 'HalfSpace', 'Slice', 'Intersection', 'List'

@@ -1,11 +1,9 @@
 import re
+
 import numpy as np
-from collections import OrderedDict
-from copy import deepcopy
-from scipy.optimize import minimize
-from device_kit import *
+
+from .basedevice import BaseDevice
 from .utils import zmm
-from logging import debug, info, warn, exception, error
 
 
 class DeviceSet(BaseDevice):

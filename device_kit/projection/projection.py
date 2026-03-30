@@ -4,25 +4,36 @@ The Intersection convex region uses dykstra's algorithm to finds the projection 
 intersection of two regions. But it's slow and should not be used recursively. Recommended approach
 is to formulate projection as a QP problem and use SciPy's minimize().
 '''
+from abc import ABC, abstractmethod
+from collections.abc import Collection
+from typing import Sequence
+
 import numpy as np
-import math
+from numpy.typing import NDArray
+
+from ..typings import Number
 
 
-class ConvexRegion():
+class ConvexRegion(ABC):
   ''' Abstract base class for convex regions '''
   tol = 1e-10
 
-  def is_in(self, point):
+  @abstractmethod
+  def __len__(self) -> int:
+    pass
+
+  def is_in(self, point: NDArray[np.number]) -> np.bool:
     return (np.abs(self.project(point) - point) <= self.tol).all()
 
-  def project(self, point):
-    raise NotImplementedError()
+  @abstractmethod
+  def project(self, point: NDArray[np.number]) -> NDArray[np.number]:
+    pass
 
 
 class HyperCube(ConvexRegion):
-  _cube = None
+  _cube: NDArray[np.number]
 
-  def __init__(self, bounds):
+  def __init__(self, bounds: Collection[Number]):
     self._cube = np.array(bounds)
     if len(self._cube.shape) != 2 or self._cube.shape[1] != 2:
       raise ValueError("Bad shape")
@@ -30,7 +41,7 @@ class HyperCube(ConvexRegion):
   def __len__(self):
     return len(self._cube)
 
-  def project(self, point):
+  def project(self, point: Collection[Number]) -> NDArray[np.number]:
     if len(point) != len(self):
       raise ValueError("Point has wrong length (%d != %d)" % (len(point), len(self)))
     return np.array([max(self._cube[i][0], min(self._cube[i][1], p)) for i, p in enumerate(point)])
@@ -42,11 +53,11 @@ class HyperCube(ConvexRegion):
 
 class HalfSpace(ConvexRegion):
   ''' A closed half space of form x*normal <> offset, where <> is determined by sign parameter. '''
-  _normal = None
-  _offset = None
-  _sign = None
+  _normal: NDArray[np.number]
+  _offset: NDArray[np.number]
+  _sign: int
 
-  def __init__(self, normal, offset, sign):
+  def __init__(self, normal: NDArray[np.number], offset: NDArray[np.number], sign: int):
     if sign == 0:
       raise ValueError("Sign must +ve or -ve")
     self._normal = np.array(normal)/np.linalg.norm(normal)
@@ -60,7 +71,7 @@ class HalfSpace(ConvexRegion):
     sign = "<=" if self._sign < 0 else ">="
     return "%s * x %s %f" % (self._normal, sign, self._offset)
 
-  def project(self, point):
+  def project(self, point: NDArray[np.number]) -> NDArray[np.number]:
     ''' Move from point in the direction of normal until normal * point <> offset is satisfied '''
     if len(point) != len(self):
       raise ValueError("Point has wrong length (%d != %d)" % (len(point), len(self)))
@@ -88,41 +99,41 @@ class HalfSpace(ConvexRegion):
 
 class Slice(ConvexRegion):
   ''' An upper+lower parallel hyperplanes. For any given point only one projection is possible. '''
-  _low = None
-  _high = None
+  _low: HalfSpace
+  _high: HalfSpace
 
-  def __init__(self, normal, low, high):
+  def __init__(self, normal: NDArray[np.number], low: NDArray[np.number], high: NDArray[np.number]):
     if low > high:
       raise ValueError("Low offset (%f) must be =< high offset (%f)", (low, high))
     self._low = HalfSpace(normal, low, 1)
     self._high = HalfSpace(normal, high, -1)
 
-  def __len__(self):
+  def __len__(self) -> int:
     return len(self._low)
 
   def __str__(self):
     return "%s AND %s" % (str(self._low), str(self._high))
 
-  def project(self, p):
-    if self._low.is_in(p):
-      return self._high.project(p)
+  def project(self, point: NDArray[np.number]) -> NDArray[np.number]:
+    if self._low.is_in(point):
+      return self._high.project(point)
     else:
-      return self._low.project(p)
+      return self._low.project(point)
 
-  def is_in(self, p):
-    return self._low.is_in(p) and self._high.is_in(p)
+  def is_in(self, point: NDArray[np.number]):
+    return self._low.is_in(point) and self._high.is_in(point)
 
 
 class Intersection(ConvexRegion):
   ''' A ConvexRegion region that is the intersection of two ConvexRegions '''
-  _a = None
-  _b = None
+  _a: ConvexRegion
+  _b: ConvexRegion
   _maxiter = 1e3
 
-  def __init__(self, a, b):
-    if not isinstance(a, ConvexRegion):
+  def __init__(self, a: ConvexRegion, b: ConvexRegion):
+    if not isinstance(a, ConvexRegion):  # type: ignore
       raise ValueError('Intersection must be of two existing ConvexRegion type. Given type %s', (type(a),))
-    if not isinstance(b, ConvexRegion):
+    if not isinstance(b, ConvexRegion):  # type: ignore
       raise ValueError('Intersection must be of two existing ConvexRegion type. Given type %s', (type(a),))
     if len(a) != len(b):
       raise ValueError('Convex regions must have same dimensionality')
@@ -135,19 +146,19 @@ class Intersection(ConvexRegion):
   def __str__(self):
     return "%s AND %s" % (str(self._a), str(self._a))
 
-  def project(self, p):
-    proj = self._a.project(p)
+  def project(self, point: NDArray[np.number]) -> NDArray[np.number]:
+    proj = self._a.project(point)
     if self._b.is_in(proj):
       return proj
-    proj = self._b.project(p)
+    proj = self._b.project(point)
     if self._a.is_in(proj):
       return proj
-    return self.dykstra_project(p)
+    return self.dykstra_project(point)
 
-  def is_in(self, p):
-    return self._a.is_in(p) and self._b.is_in(p)
+  def is_in(self, point: NDArray[np.number]) -> np.bool:
+    return self._a.is_in(point) and self._b.is_in(point)
 
-  def dykstra_project(self, point):
+  def dykstra_project(self, point: NDArray[np.number]) -> NDArray[np.number]:
     ''' See https://en.wikipedia.org/wiki/Dykstra's_projection_algorithm '''
     x = np.array(point)
     y = p = q = c = 0
@@ -166,11 +177,11 @@ class List(ConvexRegion):
   ''' Region is formed by a list of convex regions over disjoint subdomains of this region.
   The input point is treated as a matrix. It must have matching shape.
   '''
-  _regions = None
-  _axis = 0
-  _shape = None
+  _regions: Sequence[ConvexRegion]
+  _axis: int = 0
+  _shape: tuple[int, int]
 
-  def __init__(self, regions, axis=0):
+  def __init__(self, regions: Sequence[ConvexRegion], axis: int = 0):
     if axis not in (0, 1):
       raise ValueError("axis must be 0|1. Given %d" % (axis,))
     l = len(regions[0])
@@ -185,10 +196,10 @@ class List(ConvexRegion):
       _str += str(r) + '\n'
     return _str
 
-  def __len__(self):
+  def __len__(self) -> int:
     return self._shape[0]*self._shape[1]
 
-  def project(self, point):
+  def project(self, point: NDArray[np.number]):
     point = np.array(point)
     if point.shape != self._shape:
       raise ValueError("Wrong shape. Given %s, require %s" % (str(point.shape), str(self._shape)))

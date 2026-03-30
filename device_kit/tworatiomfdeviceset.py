@@ -1,5 +1,7 @@
 import numpy as np
-from device_kit import *
+
+from .basedevice import BaseDevice
+from .mfdeviceset import MFDeviceSet
 
 
 class TwoRatioMFDeviceSet(MFDeviceSet):

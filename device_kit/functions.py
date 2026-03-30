@@ -3,9 +3,10 @@ Various preference functions. Can be used with ADevice and else where.
 See notes on Function.
 '''
 from abc import ABC, abstractmethod
-import numpy as np
-import numdifftools as nd
 from functools import reduce
+
+import numdifftools as nd
+import numpy as np
 
 
 class Function(ABC):

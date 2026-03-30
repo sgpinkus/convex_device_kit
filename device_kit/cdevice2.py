@@ -1,6 +1,7 @@
 import numpy as np
-from device_kit import Device, IDevice, IDevice2
-from device_kit.functions import HLQuadraticCost, RangesFunction, InnerSumFunction
+
+from .device import Device
+from .functions import HLQuadraticCost, InnerSumFunction, RangesFunction
 
 
 class CDevice2(Device):

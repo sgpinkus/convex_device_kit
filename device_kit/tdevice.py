@@ -1,8 +1,10 @@
-import numpy as np
 import numdifftools as nd
-from device_kit import Device, IDevice
-from device_kit.functions import ABCCost
-from device_kit.utils import soc, base_soc, sustainment_matrix
+import numpy as np
+
+from .device import Device
+from .functions import ABCCost
+from .idevice import IDevice
+from .utils import base_soc, soc, sustainment_matrix
 
 
 class TDevice(Device):

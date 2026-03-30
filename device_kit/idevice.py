@@ -1,6 +1,7 @@
 import numpy as np
-from device_kit import Device
-from device_kit.functions import ABCCost
+
+from .device import Device
+from .functions import ABCCost
 
 
 class IDevice(Device):

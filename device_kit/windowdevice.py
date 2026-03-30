@@ -1,8 +1,7 @@
 import numpy as np
-from numpy import stack, hstack, zeros, ones
-import numdifftools as nd
-from device_kit import ADevice
-from device_kit.functions import *
+
+from .adevice import ADevice
+from .functions import *
 
 
 class WindowDevice(ADevice):
