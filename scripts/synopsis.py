@@ -30,7 +30,7 @@ def make_model():
         24,
         np.stack((-1*np.minimum(pv_max_rate, pv_solar_intensity*pv_efficiency*pv_area), np.zeros(24)), axis=1),
       ),
-      SDevice('battery', 24, (-5, 5), c1=0.01, capacity=14, sustainment=1.0, efficiency=0.99)
+      SDevice('battery', 24, (-5, 5), c1=0.01, capacity=14, sustainment=1.0, efficiency=1.0, reserve=0.5, start=0.5)
     ],
     sbounds=(0, 0)  # balanced flow constraint.
   )

@@ -14,12 +14,12 @@ from .solve import OptimizationException, solve, step
 from .subbalanceddeviceset import SubBalancedDeviceSet
 from .tdevice import TDevice
 from .tworatiomfdeviceset import TwoRatioMFDeviceSet
-from .utils import care2bounds, on2bounds, project, zmm
+from .utils import adjust_cbounds, care2bounds, on2bounds, project, zmm
 from .windowdevice import WindowDevice
 
 __all__ = [
   'BaseDevice', 'DeviceSet', 'SubBalancedDeviceSet',
-  'care2bounds', 'on2bounds', 'zmm', 'project',
+  'care2bounds', 'on2bounds', 'zmm', 'project', 'adjust_cbounds',
   'solve', 'step', 'OptimizationException',
   'Device', 'CDevice', 'IDevice', 'TDevice', 'SDevice', 'PVDevice', 'GDevice', 'ADevice',
   'IDevice2', 'CDevice2', 'WindowDevice',

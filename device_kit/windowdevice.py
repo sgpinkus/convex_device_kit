@@ -17,6 +17,22 @@ class WindowDevice(ADevice):
   def __init__(self, id, length, bounds, w, cbounds=None, c=1):
     super().__init__(id, length, bounds, cbounds, f=WindowPenalty(w, c), w=w, c=c)
 
+  def slice(self, history):
+    '''Rebuild a WindowDevice with sliced bounds. Overrides ADevice.slice().'''
+    from device_kit.utils import adjust_cbounds as _adjust_cbounds
+    history = np.asarray(history).reshape(1, -1)
+    T = history.shape[1]
+    if T >= len(self):
+      raise ValueError(f'History length {T} must be less than device length {len(self)}')
+    return WindowDevice(
+      id=self.id,
+      length=len(self) - T,
+      bounds=self.bounds[T:],
+      w=self.w,
+      cbounds=_adjust_cbounds(self.cbounds, history[0], T, len(self)),
+      c=self.c,
+    )
+
   @property
   def c(self):
     return self._c

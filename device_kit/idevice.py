@@ -14,6 +14,29 @@ class IDevice(Device):
     super().__init__(id, length, bounds, cbounds=None, **kwargs)
     self._cost_fn = ABCCost(self.a, self.b, self.c, self.lbounds, self.hbounds)
 
+  def slice(self, history):
+    '''Slice per-slot params a, b, c in addition to bounds/cbounds.
+    Params must be sliced in the data dict before the constructor is called,
+    because __init__ validates length against self._length which is set first.'''
+    history = np.asarray(history).reshape(1, -1)
+    T = history.shape[1]
+    if T >= len(self):
+      raise ValueError(f'History length {T} must be less than device length {len(self)}')
+    from device_kit.utils import adjust_cbounds as _adjust_cbounds
+    h1d = history[0]
+    data = self.to_dict()
+    data['length'] = len(self) - T
+    data['bounds'] = self.bounds[T:]
+    data['cbounds'] = _adjust_cbounds(self.cbounds, h1d, T, len(self))
+    for attr in ('a', 'b', 'c'):
+      if attr in data:
+        v = np.asarray(data[attr])
+        if v.ndim > 0 and len(v) == len(self):
+          data[attr] = v[T:]
+    sliced = self.__class__(**{k: v for k, v in data.items() if k in self._keys})
+    sliced._cost_fn = ABCCost(sliced.a, sliced.b, sliced.c, sliced.lbounds, sliced.hbounds)
+    return sliced
+
   def costv(self, s, p):
     return self._cost_fn(s)/len(self) + s*p
 

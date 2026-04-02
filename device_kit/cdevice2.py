@@ -19,6 +19,12 @@ class CDevice2(Device):
     else:
       self._cost_fn = RangesFunction([((c[2], c[3]), InnerSumFunction(HLQuadraticCost(self.p_l, self.p_h, c[0], c[1]))) for c in self.cbounds])
 
+  def slice(self, history):
+    '''Slice bounds/cbounds then reconstruct. CDevice2.__init__ rebuilds _cost_fn
+    from cbounds automatically, so calling super().slice() (which calls __class__(**data))
+    is sufficient.'''
+    return super().slice(history)
+
   def cost(self, s, p):
     return self._cost_fn(s) + np.array(s*p).sum()
 

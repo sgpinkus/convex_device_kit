@@ -34,7 +34,7 @@ class SDevice(Device):
         later but the clipping rate is propotional to the value. Trapezoid ..
 
   '''
-  _c1 = 1.0
+  _c1 = 0.0
   _c2 = 0.0
   _c3 = 0.0
   _capacity = 10
@@ -49,6 +49,38 @@ class SDevice(Device):
   def __init__(self, id, length, bounds, cbounds=None, **kwargs):
     super().__init__(id, length, bounds, cbounds=None, **kwargs)
     self._sustainment_matrix = sustainment_matrix(self.sustainment, len(self))
+
+  def slice(self, history):
+    '''Condition on observed history: advance start SoC to observed terminal SoC,
+    adjust bounds and cbounds for remaining slots.'''
+    from device_kit.utils import adjust_cbounds as _adjust_cbounds
+    from device_kit.utils import base_soc, soc
+    from device_kit.utils import sustainment_matrix as sm_fn
+    history = np.asarray(history).reshape(1, -1)
+    T = history.shape[1]
+    if T >= len(self):
+      raise ValueError(f'History length {T} must be less than device length {len(self)}')
+    h1d = history[0]
+    # Compute terminal SoC using just the history length — avoids charge_at()'s
+    # assumption that the flow vector has the same length as the full device.
+    terminal_soc = (
+      base_soc(self.base(), s=self.sustainment, l=T)[-1]
+      + soc(h1d, s=self.sustainment, e=self.efficiency)[-1]
+    )
+    if terminal_soc < 0 or terminal_soc > self.capacity:
+      raise ValueError(
+        f'History drives SDevice "{self.id}" SoC to {terminal_soc:.4f}, '
+        f'which is outside [0, {self.capacity}]'
+      )
+    new_start = terminal_soc / self.capacity
+    data = self.to_dict()
+    data['length'] = len(self) - T
+    data['bounds'] = self.bounds[T:]
+    data['cbounds'] = _adjust_cbounds(self.cbounds, h1d, T, len(self))
+    data['start'] = new_start
+    sliced = self.__class__(**{k: v for k, v in data.items() if k in self._keys})
+    sliced._sustainment_matrix = sm_fn(sliced.sustainment, len(sliced))
+    return sliced
 
   def costv(self, s, p):
     return self.charge_costs(s) + s*p

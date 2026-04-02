@@ -187,6 +187,28 @@ class Device(BaseDevice):
   def project(self, s: NDArray[np.number]) -> NDArray[np.number]:
     return self._feasible_region.project(s.reshape(len(self))).reshape(self.shape)
 
+  def slice(self, history: NDArray[np.number]) -> "Device":
+    ''' Return a new Device of the same type covering slots [T:], conditioned on history.
+    history must have shape (1, T) or (T,).  Subclasses with extra state (cost params,
+    etc.) should override this and call super().slice() to get the adjusted base kwargs,
+    then reconstruct with their own extra params.
+    '''
+    from device_kit.utils import adjust_cbounds as _adjust_cbounds
+    history = np.asarray(history).reshape(1, -1)
+    T = history.shape[1]
+    if T >= len(self):
+      raise ValueError(f'History length {T} must be less than device length {len(self)}')
+    h1d = history[0]
+    new_bounds = self.bounds[T:]
+    new_cbounds = _adjust_cbounds(self.cbounds, h1d, T, len(self))
+    data = self.to_dict()
+    data['length'] = len(self) - T
+    data['bounds'] = new_bounds
+    data['cbounds'] = new_cbounds
+    # Strip any keys that the constructor doesn't accept via **meta but that
+    # to_dict() emits (none for Device itself, but subclasses may add some).
+    return self.__class__(**{k: v for k, v in data.items() if k in self._keys})
+
   def to_dict(self) -> dict[str, Any]:
     ''' Dump object as dict. Dict should allow re-init of instance via cls(**data). See __init__(),
     from_dict().

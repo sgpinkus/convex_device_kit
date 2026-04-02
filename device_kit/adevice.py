@@ -7,6 +7,13 @@ class ADevice(Device):
   _f = NullFunction()
   _constraints = []
 
+  def slice(self, history):
+    raise NotImplementedError(
+      'ADevice does not support slice(): the arbitrary cost function and constraints '
+      'cannot be automatically conditioned on history. Subclass ADevice and implement '
+      'slice() manually if you need incremental re-optimization.'
+    )
+
   def cost(self, s, p=0):
     s = s.reshape(len(self))
     return self.f(s) + (s*p).sum()

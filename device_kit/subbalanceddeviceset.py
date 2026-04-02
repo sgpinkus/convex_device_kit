@@ -21,6 +21,25 @@ class SubBalancedDeviceSet(DeviceSet):
     (self.labelled_sets, self.unlabelled_set) = self._labelled_sets()
     self.labelled_sets = list(self.labelled_sets.values())
 
+  def slice(self, history):
+    '''Slice child devices and rebuild preserving labels and constraint configuration.'''
+    history = np.asarray(history)
+    T = history.shape[1]
+    if T >= len(self):
+      raise ValueError(f'History length {T} must be less than device length {len(self)}')
+    sliced_devices = []
+    for d, (offset, nrows) in zip(self.devices, self.partition):
+      child_history = history[offset:offset + nrows, :]
+      sliced_devices.append(d.slice(child_history))
+    new_sbounds = self.sbounds[T:] if self.sbounds is not None else None
+    return SubBalancedDeviceSet(
+      self.id, sliced_devices, sbounds=new_sbounds,
+      labels=self.labels,
+      constraint_type=self.constraint_type,
+      sign=self.sign,
+      apply_to_remaining=self.apply_to_remaining,
+    )
+
   @property
   def constraints(self):
     constraints = super().constraints

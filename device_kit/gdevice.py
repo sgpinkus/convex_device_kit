@@ -27,6 +27,18 @@ class GDevice(Device):
   _cost_d2_fn = None
   _cost_coeffs = None
 
+  def slice(self, history):
+    '''Slice cost_coeffs (if per-slot 2D) in addition to bounds/cbounds.'''
+    history = np.asarray(history).reshape(1, -1)
+    T = history.shape[1]
+    sliced = super().slice(history)
+    coeffs = self._cost_coeffs
+    if np.asarray(coeffs).ndim == 2:
+      sliced.cost_coeffs = np.asarray(coeffs)[T:]
+    else:
+      sliced.cost_coeffs = coeffs
+    return sliced
+
   def costv(self, s, p):
     ''' Get cost vector for s, p. '''
     return s*p + self._cost_fn(-s)

@@ -18,6 +18,10 @@ class PVDevice(Device):
 
   '''
 
+  def slice(self, history):
+    '''PVDevice has no extra per-slot state beyond bounds; delegate to Device.slice().'''
+    return super().slice(history)
+
   def costv(self, s, p):
     ''' Cost is -profit. '''
     return s*p

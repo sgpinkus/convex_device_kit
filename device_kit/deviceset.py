@@ -179,6 +179,24 @@ class DeviceSet(BaseDevice):
           }]
     return constraints
 
+  def slice(self, history):
+    ''' Recursively slice all child devices, then rebuild with sbounds sliced for remaining slots.
+    history must have shape (self.shape[0], T) — one row per leaf device row.
+    '''
+    history = np.asarray(history)
+    if history.ndim == 1:
+      raise ValueError('history for DeviceSet must be 2D with shape (n_rows, T)')
+    T = history.shape[1]
+    if T >= len(self):
+      raise ValueError(f'History length {T} must be less than device length {len(self)}')
+    # Recursively slice each child, passing the correct rows of history
+    sliced_devices = []
+    for d, (offset, nrows) in zip(self.devices, self.partition):
+      child_history = history[offset:offset + nrows, :]
+      sliced_devices.append(d.slice(child_history))
+    new_sbounds = self.sbounds[T:] if self.sbounds is not None else None
+    return self.__class__(self.id, sliced_devices, sbounds=new_sbounds)
+
   def project(self, s):
     return np.vstack([d.project(s[i[0]:i[0]+i[1], :]) for d, i in zip(self.devices, self.partition)])
 

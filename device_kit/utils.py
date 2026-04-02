@@ -110,3 +110,34 @@ def get_device_by_id(deviceset, id):
     return list(filter(lambda v: v.id == id, deviceset.devices))[0]
   except BaseException:
     return None
+
+
+def adjust_cbounds(cbounds, history_1d, T, full_length):
+  ''' Adjust a list of cbounds 4-tuples given observed history for a single atomic device.
+
+  Each cbound is (lo, hi, t_start, t_end). history_1d is the observed flow for slots [0, T).
+  Returns a (possibly shorter) list of adjusted cbounds, or None if none remain.
+
+  Cbounds whose window ends before T are dropped (fully historical).
+  Cbounds that are partially or fully in the future are adjusted: the observed partial sum
+  is subtracted from lo and hi, and the window is re-indexed relative to the sliced device.
+  Raises ValueError if the observed sum already exceeds the upper cbound.
+  '''
+  if cbounds is None:
+    return None
+  result = []
+  for lo, hi, t_start, t_end in cbounds:
+    if t_end <= T:
+      continue  # fully in the past, drop
+    observed_sum = float(history_1d[max(t_start, 0):T].sum())
+    new_lo = lo - observed_sum
+    new_hi = hi - observed_sum
+    new_start = max(t_start, T) - T  # re-index relative to sliced device
+    new_end = t_end - T
+    if new_hi < 0:
+      raise ValueError(
+        f'History violates cbound: observed partial sum {observed_sum:.4f} '
+        f'already exceeds upper cbound {hi:.4f}'
+      )
+    result.append((new_lo, new_hi, new_start, new_end))
+  return result if result else None

@@ -74,6 +74,31 @@ class TDevice(Device):
     self.t_act_min = (self.t_optimal - self.t_range) - self.t_base
     self.t_act_max = (self.t_optimal + self.t_range) - self.t_base
 
+  def slice(self, history):
+    '''Condition on observed history: advance t_init to terminal temperature,
+    slice t_external and t_range for remaining slots.'''
+    from device_kit.utils import base_soc, soc
+    from device_kit.utils import adjust_cbounds as _adjust_cbounds
+    history = np.asarray(history).reshape(1, -1)
+    T = history.shape[1]
+    if T >= len(self):
+      raise ValueError(f'History length {T} must be less than device length {len(self)}')
+    h1d = history[0]
+    # Compute terminal temperature over only the first T slots.
+    # r2t() cannot be used directly because it reshapes to len(self).
+    t_base_T = self.t_base[:T]
+    terminal_t = (t_base_T + soc(h1d, s=self.sustainment, e=self.efficiency))[-1]
+    data = self.to_dict()
+    data['length'] = len(self) - T
+    data['bounds'] = self.bounds[T:]
+    data['t_init'] = terminal_t
+    data['t_external'] = np.asarray(self.t_external)[T:]
+    data['t_range'] = np.asarray(self._t_range).reshape(-1)[T:]
+    data['cbounds'] = _adjust_cbounds(self.cbounds, h1d, T, len(self))
+    allowed = {'id', 'length', 'bounds', 'cbounds', 'sustainment', 'efficiency',
+               't_init', 't_optimal', 't_range', 't_external', 'c'}
+    return self.__class__(**{k: v for k, v in data.items() if k in allowed})
+
   def cost(self, s, p):
     return self.costv(s, p).sum()
 

@@ -22,6 +22,16 @@ class TwoRatioMFDeviceSet(MFDeviceSet):
     self.ratios = ratios
     self.constraint_type = constraint_type
 
+  def slice(self, history):
+    '''Slice the wrapped device and rebuild with same flows, ratios and constraint_type.'''
+    history = np.asarray(history)
+    T = history.shape[1]
+    if T >= len(self):
+      raise ValueError(f'History length {T} must be less than device length {len(self)}')
+    combined_history = history.sum(axis=0, keepdims=True)
+    sliced_device = self._device.slice(combined_history)
+    return TwoRatioMFDeviceSet(sliced_device, self._flows, self.ratios, self.constraint_type)
+
   @property
   def constraints(self):
     constraints = super().constraints

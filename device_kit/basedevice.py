@@ -4,7 +4,7 @@ import re
 import warnings
 from abc import ABC, abstractmethod
 from collections.abc import Collection
-from typing import Any, Generator
+from typing import Any, Generator, Iterator
 
 import numpy as np
 from numpy.typing import NDArray
@@ -139,7 +139,7 @@ class BaseDevice(ABC):
     An ordered list is returned so the key offset indicates the row offset (under the invariant that
     atomic leaf devices have shape (1,N)). Ex {v: k for k, v in enumerate(OrderedDict(x).keys())}
     '''
-    def _leaf_devices(device: "BaseDevice", fqid: str, s: str = '.') -> Generator[tuple[str, "BaseDevice"]]:
+    def _leaf_devices(device: "BaseDevice", fqid: str, s: str = '.') -> Iterator[tuple[str, "BaseDevice"]]:
       try:
         for sub_device in device:  # type: ignore
           for item in _leaf_devices(sub_device, fqid + s + sub_device.id, s):  # type: ignore
@@ -161,7 +161,7 @@ class BaseDevice(ABC):
   def find(self, regexp: str) -> list["BaseDevice"]:
     return [v for k, v in dict(self.leaf_devices()).items() if re.match(regexp, k)]
 
-  def map(self, s: NDArray[np.number]) -> Generator[tuple[str, NDArray[np.number]]]:
+  def map(self, s: NDArray[np.number]) -> Iterator[tuple[str, NDArray[np.number]]]:
     ''' maps rows of flow matrix `s` to identifiers of atomic devices under this device. Returns
     list of tuples.  You can load this into Pandas like pd.DataFrame(dict(device.map(s))).
     Note this implementation assumes that all leaf devices have shape (1,X).
@@ -220,7 +220,21 @@ class BaseDevice(ABC):
       raise ValueError('max bound must be >= min bound for all min/max bound pairs: %s' % (str(hbounds - lbounds),))
     return bounds
 
+  @abstractmethod
+  def slice(self, history: NDArray[np.number]) -> "BaseDevice":
+    ''' Return a new device of the same type covering only the remaining slots [T:],
+    where T = history.shape[1] (for atomic devices, history.shape[0] must be 1).
+    All constraints and cost functions are conditioned on the observed history so
+    that the returned device is a valid, fully self-contained convex problem over
+    the remaining horizon.
+
+    Raises ValueError if the history is infeasible (e.g. violates a cbound that
+    has already closed, or drives an SDevice SoC out of [0, capacity]).
+    '''
+    pass
+
   @classmethod
   def from_dict(cls, d: dict[Any, Any]):
     ''' Just call constructor. Nothing special to do. '''
     return cls(**d)
+

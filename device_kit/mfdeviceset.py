@@ -40,6 +40,18 @@ class MFDeviceSet(DeviceSet):
     for flow in flows:
       self._devices.append(Device(flow, len(device), bounds))
 
+  def slice(self, history):
+    '''Slice the wrapped device and rebuild MFDeviceSet with the same flow names.
+    history shape: (n_flows, T). The combined flow (sum across flows) is used
+    to condition the underlying device.'''
+    history = np.asarray(history)
+    T = history.shape[1]
+    if T >= len(self):
+      raise ValueError(f'History length {T} must be less than device length {len(self)}')
+    combined_history = history.sum(axis=0, keepdims=True)
+    sliced_device = self._device.slice(combined_history)
+    return self.__class__(sliced_device, self._flows)
+
   def __len__(self):
     return self._length
 
